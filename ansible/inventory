@@ -1,0 +1,2 @@
+[kops]
+13.53.92.188 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/.ssh/hiteshsp-20200220.pem

@@ -1,0 +1,69 @@
+---
+# tasks file for kops
+
+- name: Install utilities
+  package:
+    name: unzip
+    state: present
+
+- name: Install boto deps
+  pip:
+    name: "{{ item }}"
+  loop:
+    - boto3
+    - boto
+
+- name: Create an S3 bucket
+  s3_bucket:
+    name: "{{ s3_bucket_name }}"
+    state: present
+    versioning: yes
+    region: "{{ s3_bucket_region }}"
+
+- name: Install kubectl & kops
+  get_url:
+    url: "{{ item }}"
+    dest: /usr/local/bin/
+    mode: '0555'
+  loop:
+   - "{{ kubectl_url }}"
+   - "{{ kops_url }}"
+
+- name: Rename kops
+  command:
+    cmd: mv /usr/local/bin/kops-linux-amd64 /usr/local/bin/kops
+
+- name: Create a kops directory
+  file:
+    path: /home/ubuntu/kops
+    state: directory
+    mode: '0755'
+
+- name: copy tf files
+  copy:
+    src: terraform
+    dest: /home/ubuntu/kops
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
+- name: Install terraform
+  unarchive:
+    src: "{{ terraform_url }}"
+    dest: /usr/local/bin/
+    mode: '0555'
+    remote_src: yes	
+
+- name: Run terraform apply
+  terraform:
+    project_path: /home/ubuntu/kops/terraform
+    state: present
+    force_init: yes
+  register: outputs
+  ignore_errors: yes
+
+- name: Terraform output
+  script: kops.sh
+  args:
+    chdir: /home/ubuntu/kops/terraform
+

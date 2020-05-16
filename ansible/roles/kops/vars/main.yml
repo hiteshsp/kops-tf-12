@@ -1,0 +1,9 @@
+---
+# vars file for kops
+s3_bucket_name: "kops.hitesh"
+s3_bucket_region: "us-east-1"
+kubectl_url: "https://storage.googleapis.com/kubernetes-release/release/v1.18.2/bin/linux/amd64/kubectl"
+kops_url: "https://github.com/kubernetes/kops/releases/download/v1.17.0-alpha.4/kops-linux-amd64"
+terraform_url: "https://releases.hashicorp.com/terraform/0.12.24/terraform_0.12.24_linux_amd64.zip"
+ssh_key_location: /home/ubuntu/.ssh/id_rsa.pub
+cluster_name: omarelk-cluster.k8s.local

@@ -1,0 +1,89 @@
+---
+# tasks file for kops
+- name: Create a keypair
+  openssh_keypair:
+    path: /home/ubuntu/.ssh/id_rsa
+
+- name: Install utilities
+  package:
+    name: unzip
+    state: present
+
+- name: Install boto deps
+  pip:
+    name: "{{ item }}"
+  loop:
+    - boto3
+    - boto
+
+- name: Create an S3 bucket
+  s3_bucket:
+    name: "{{ s3_bucket_name }}"
+    state: present
+    versioning: yes
+    region: "{{ s3_bucket_region }}"
+
+- name: Install kubectl & kops
+  get_url:
+    url: "{{ item }}"
+    dest: /usr/local/bin/
+    mode: '0555'
+  loop:
+   - "{{ kubectl_url }}"
+   - "{{ kops_url }}"
+
+- name: Rename kops
+  command:
+    cmd: mv /usr/local/bin/kops-linux-amd64 /usr/local/bin/kops
+
+- name: Create a kops directory
+  file:
+    path: /home/ubuntu/kops
+    state: directory
+    mode: '0755'
+
+- name: kops create cluster
+  command:
+    cmd: >
+        kops create cluster
+        --name "{{ cluster_name }}"
+        --zones us-east-1a 
+        --master-zones us-east-1a
+        --node-count 1
+        --master-count 1
+        --node-size t3.medium
+        --master-size t3.medium
+        --ssh-public-key "{{ssh_key_location}}"
+        --topology private 
+        --networking calico
+        --network-cidr 172.40.0.0/16
+        --target terraform
+        --state s3://"{{s3_bucket_name}}"
+        --out /home/ubuntu/kops
+        --yes
+  ignore_errors: yes
+
+- name: Install terraform
+  unarchive:
+    src: "{{ terraform_url }}"
+    dest: /usr/local/bin/
+    mode: '0555'
+    remote_src: yes	
+
+- name: Init terraform
+  shell: cd /home/ubuntu/kops && terraform init && terraform 0.12upgrade -yes
+  ignore_errors: yes
+
+- name: Run terraform apply
+  terraform:
+    project_path: /home/ubuntu/kops
+    state: present
+  register: outputs
+  ignore_errors: yes
+
+- debug: var=outputs
+
+- name: Export kubeconfig
+  shell: kops export kubecfg "{{ cluster_name  }}" --state s3://"{{s3_bucket_name}}"
+  become: yes
+  become_user: ubuntu
