@@ -11,6 +11,7 @@ kops update cluster --target terraform --state ${STATE} --name ${CLUSTER_NAME} -
 cd ../
 terraform init && terraform 0.12upgrade -yes
 terraform apply -auto-approve
+kops update cluster ${CLUSTER_NAME} --state ${STATE} --yes
 kops rolling-update cluster --cloudonly --force --yes --state ${STATE}
 kops export kubecfg --name ${CLUSTER_NAME} --state ${STATE}
 kubectl config set-cluster ${CLUSTER_NAME} --server=https://api.${CLUSTER_NAME}

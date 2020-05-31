@@ -67,3 +67,11 @@
   args:
     chdir: /home/ubuntu/kops/terraform
 
+- name: Install Helm
+  script: get_helm.sh
+
+- name: Add Helm repo
+  command: helm repo add elastic https://helm.elastic.co
+
+- name: Installing ES cluster
+  command: helm install elasticsearch elastic/elasticsearch --set service.type=LoadBalancer
