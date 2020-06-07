@@ -4,7 +4,7 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket = "kops.hitesh"
+    bucket = "{{ s3_bucket_name }}"
     key    = "dev/terraform"
     region = "us-east-1"
   }
@@ -12,10 +12,10 @@ terraform {
 
 locals {
   azs                    = ["us-east-1a", "us-east-1b", "us-east-1c"]
-  environment            = "hitesh"
+  environment            = "{{ env }}"
   kops_state_bucket_name = "${local.environment}-kops-state"
   kubernetes_cluster_name = "hiteshelk-cluster.k8s.local"
-  ingress_ips             = ["10.0.0.100/32", "10.0.0.101/32"]
+  ingress_ips             = ["10.0.0.100/32", "10.0.0.101/32","0.0.0.0/0"]
   vpc_name                = "${local.environment}-vpc"
 
   tags = {

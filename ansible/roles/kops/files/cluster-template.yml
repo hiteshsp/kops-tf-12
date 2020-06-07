@@ -29,13 +29,12 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
-  kubernetesVersion: 1.15.0
+  kubernetesVersion: 1.15.11
   masterPublicName: api.{{.kubernetes_cluster_name.value}}
   networkCIDR: {{.vpc_cidr_block.value}}
   networkID: {{.vpc_id.value}}
   networking:
-    calico: 
-      majorVersion: v3
+    calico: {} 
   nonMasqueradeCIDR: 100.64.0.0/10
   subnets:
   # Public (utility) subnets, one per AZ
@@ -70,7 +69,7 @@ metadata:
   name: master-{{.}}
 spec:
   image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
-  kubernetesVersion: 1.15.0
+  kubernetesVersion: 1.15.11
   machineType: t2.medium
   maxSize: 1
   minSize: 1
@@ -88,10 +87,10 @@ metadata:
   name: nodes
 spec:
   image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
-  kubernetesVersion: 1.15.0
-  machineType: t2.small
-  maxSize: 2
-  minSize: 1
+  kubernetesVersion: 1.15.11
+  machineType: t2.medium
+  maxSize: 3
+  minSize: 3
   role: Node
   subnets:
   {{range .availability_zones.value}}

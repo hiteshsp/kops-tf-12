@@ -35,14 +35,24 @@
 
 - name: Create a kops directory
   file:
-    path: /home/ubuntu/kops
+    path: "{{ kops_file_path }}/terraform"
     state: directory
     mode: '0755'
 
-- name: copy tf files
+- name: Copy TF files
+  template:
+    src: "{{ item }}"
+    dest: "{{ kops_file_path }}/terraform/{{ item | basename | regex_replace('.j2', '') }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+  with_fileglob:
+    - ../templates/terraform/*.j2
+
+- name: Copy Kops cluster spec file
   copy:
-    src: terraform
-    dest: /home/ubuntu/kops
+    src: cluster-template.yml
+    dest: "{{ kops_file_path }}/terraform/cluster-template.yml"
     owner: ubuntu
     group: ubuntu
     mode: '0644'
@@ -56,7 +66,7 @@
 
 - name: Run terraform apply
   terraform:
-    project_path: /home/ubuntu/kops/terraform
+    project_path: "{{ kops_file_path }}/terraform"
     state: present
     force_init: yes
   register: outputs
@@ -65,5 +75,10 @@
 - name: Terraform output
   script: kops.sh
   args:
-    chdir: /home/ubuntu/kops/terraform
+      chdir: "{{ kops_file_path }}/terraform"
+  
+- name: Install Helm
+  script: get_helm.sh
+  args:
+       chdir: /usr/local/bin
 
